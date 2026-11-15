@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://challenges.cloudflare.com; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com https://yhpdueqplnnolesuwhht.supabase.co; frame-src https://challenges.cloudflare.com; base-uri 'none'; form-action 'none'">
-<title>Velvet — One sexy music player~</title>
+<title>Velvet — An intimate music experience~</title>
 <meta name="description" content="Velvet: a music player for Windows built on YouTube Music, with synced lyrics, music videos and listening together.">
 <link rel="icon" href="/velvetplayer/icon.png">
 <style>
@@ -33,6 +33,12 @@
   .scan { display: flex; flex-direction: column; justify-content: center; min-width: 210px; font-size: 13px; }
   .scan b { font-size: 14px; } .scan a { color: var(--rose); font-weight: 600; text-decoration: none; } .scan a:hover { text-decoration: underline; }
   .scan code { color: var(--mute); font-size: 11px; }
+  .vt-state { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; }
+  .vt-state i { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; font-style: normal; font-size: 11px; color: #fff; }
+  .vt-state.clean { color: #7ee2a0; } .vt-state.clean i { background: #2e9e5b; }
+  .vt-state.flagged { color: #f2c46d; } .vt-state.flagged i { background: #b8860b; }
+  .vt-state.unknown { color: var(--dim); font-weight: 600; }
+  .vt-state small { display: block; font-weight: 500; color: var(--mute); font-size: 11px; }
   .fbbox { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
   .notice { margin: 20px 0 0 auto; max-width: 560px; color: var(--dim); font-size: 13px; }
   .notice b { color: var(--ink); }
@@ -88,7 +94,7 @@
   <header class="top">
     <div class="brand">
       <img src="/velvetplayer/icon.png" alt="">
-      <div><h1>Velvet</h1><p>One <em>sexy</em> music player~</p></div>
+      <div><h1>Velvet</h1><p>An <em>intimate</em> music experience~</p></div>
     </div>
     <div>
       <div class="get">
@@ -98,6 +104,7 @@
         </div>
         <div class="card scan">
           <b>Virus check</b>
+          <span id="vt-state" class="vt-state" hidden></span>
           <a id="vt" href="https://www.virustotal.com/" rel="noopener" target="_blank">VirusTotal report ↗</a>
           <code id="sha"></code>
         </div>
@@ -211,6 +218,22 @@
         if (sha) { $('#vt').href = `https://www.virustotal.com/gui/file/${sha}`; $('#sha').textContent = `SHA-256 ${sha.slice(0, 16)}…`; $('#sha').title = sha; }
       })
       .catch(() => {}); // offline or rate-limited: the button still opens the releases page
+    // the live verdict: Velvet's server asks VirusTotal about this exact setup (the key stays on the server)
+    fetch('https://yhpdueqplnnolesuwhht.supabase.co/functions/v1/virus-check')
+      .then(r => r.json())
+      .then(v => {
+        if (!v || !v.state) return;
+        const box = $('#vt-state'), when = v.date ? new Date(v.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+        box.className = 'vt-state ' + v.state; box.hidden = false;
+        box.replaceChildren();
+        const i = document.createElement('i'), t = document.createElement('span'), small = document.createElement('small');
+        i.textContent = v.state === 'clean' ? '✓' : v.state === 'flagged' ? '!' : '?';
+        t.textContent = v.state === 'clean' ? `Clean: 0 of ${v.engines} engines` : v.state === 'flagged' ? `${v.flagged} of ${v.engines} engines flag it` : 'Not scanned yet';
+        small.textContent = v.state === 'unknown' ? 'Open the report to scan it' : `Scanned ${when}`;
+        t.append(small); box.append(...(v.state === 'unknown' ? [] : [i]), t);
+        if (v.link) $('#vt').href = v.link;
+      })
+      .catch(() => {}); // the link alone still works
   }
 
   // ---------- feedback: write one or more, then Send; the server numbers it and emails it ----------
