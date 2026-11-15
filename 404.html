@@ -91,6 +91,8 @@
   .share h1 { font-size: 28px; margin: 0 0 8px; }
   .share p { color: var(--dim); margin: 0 0 24px; }
   .share small { display: block; margin-top: 28px; color: var(--mute); }
+  .what { margin-top: 6px; color: #b3b3b3; max-width: 46ch; }
+  .shot { display: block; width: 100%; height: auto; border-radius: 12px; margin-top: 24px; }
 </style>
 </head>
 <body>
@@ -110,7 +112,8 @@
   <header class="top">
     <div class="brand">
       <img src="/velvetplayer/icon.png" alt="">
-      <div><h1>Velvet</h1><p>An <em>intimate</em> music experience~</p></div>
+      <div><h1>Velvet</h1><p>An <em>intimate</em> music experience~</p>
+        <p class="what">A music player for Windows built on YouTube Music: synced lyrics, music videos, a lyric overlay that sits over your games, and listening together with friends.</p></div>
     </div>
     <div class="dl">
       <a class="btn" id="dl" href="https://github.com/BugsReporter/velvet-releases/releases/latest" rel="noopener">Download for Windows</a>
@@ -132,12 +135,18 @@
       <p class="notice"><b>Windows will warn you.</b> Velvet isn’t signed by a verified publisher (that certificate costs a lot for a one-person project), so Microsoft Defender SmartScreen shows “Windows protected your PC”. That warning is about exactly this: an unknown publisher. To install, click <b>More info → Run anyway</b>. The VirusTotal report shows what dozens of antivirus engines say about this exact file.</p>
     </div>
   </header>
-
+  <img class="shot" src="velvet.jpg" alt="Velvet's Home page" width="1280" height="820" loading="lazy">
 
   <div class="cols">
     <section class="log">
       <h2>What’s new</h2>
-      <p class="ver" style="margin:0">The short version. The full changelog is in the app (Options → Changelog).</p>
+      <p class="ver" style="margin:0">The short version. Every version’s notes are on <a href="https://github.com/BugsReporter/velvet-releases/releases" rel="noopener">GitHub</a>.</p>
+      <h3>0.5.0</h3>
+      <ul>
+        <li>Safer saves and sync: no lost libraries, and two PCs no longer overwrite each other.</li>
+        <li>Mature songs open in a small YouTube Music window.</li>
+        <li>Shorter Settings with About and Fine-tune, labelled playlist buttons, and calmer motion.</li>
+      </ul>
       <h3>0.4.20</h3>
       <ul>
         <li>A small update panel under the arrow: progress, what’s new, Update or Not now.</li>
@@ -200,16 +209,18 @@
     <section class="legal">
       <h2>Credits</h2>
       <p><b>Created by wheresJonn (Jonn).</b> Built with help from Claude, Anthropic’s AI assistant.</p>
-      <p><b>tsu</b>: “Unsloppified it just enough to not have RCEs”.</p>
+      <p><b>tsu</b>: security review and fixes.</p>
       <p>Synced lyrics from <a href="https://lrclib.net" rel="noopener">LRCLIB</a>. Icons from <a href="https://lucide.dev" rel="noopener">Lucide</a> (ISC licence).</p>
 
       <h2 style="margin-top:28px">Legal</h2>
-      <p>Velvet plays music and videos through YouTube’s official embedded player and uses YouTube’s services. By using Velvet you also agree to the <a href="https://www.youtube.com/t/terms" rel="noopener">YouTube Terms of Service</a>, and <a href="https://policies.google.com/privacy" rel="noopener">Google’s Privacy Policy</a> applies to what YouTube receives.</p>
+      <p>Velvet plays music and videos through YouTube’s embedded player, blocks its ads and hides its on-screen controls, and uses YouTube’s services. By using Velvet you also agree to the <a href="https://www.youtube.com/t/terms" rel="noopener">YouTube Terms of Service</a>, and <a href="https://policies.google.com/privacy" rel="noopener">Google’s Privacy Policy</a> applies to what YouTube receives.</p>
       <p>Velvet is an independent project, not affiliated with or endorsed by Spotify, Apple, YouTube, Google or Discord. All names and trademarks belong to their owners.</p>
       <p>Velvet is provided as is, without warranty of any kind.</p>
+      <p><b>Sending your own files.</b> Petals can send each other songs from their own Local songs folder. The file goes straight from one PC to the other: Velvet doesn’t host, store, check or see it, and only passes the two PCs’ connection details. Each file goes only when its owner says yes. You are responsible for what you send: only send files you made, own the rights to, or are otherwise allowed to share, and don’t send anything illegal. Velvet can’t see what was sent, so questions about a file are for the person who sent it.</p>
 
       <h2 style="margin-top:28px">Privacy</h2>
       <p>Your library lives on your PC. An account is optional: with one, your library syncs to Velvet’s server, and your Petals see what you listen to only if you allow it. Velvet doesn’t sell or share your data, and has no ads or trackers.</p>
+      <p>When a Petal sends you a file, or you send one, your two PCs connect directly, so each of you can see the other’s IP address. To find a way through your router, each PC asks Cloudflare’s public STUN server for its own outside address; Cloudflare sees that address, never the file. Velvet’s server keeps who asked for which song (its name and artist) for two days, and deletes the connection details once the file has gone through.</p>
       <p>This website keeps no cookies. It asks GitHub for the latest version. Feedback sends only what you write; Cloudflare checks that you aren’t a bot, and your IP address is kept only as a scrambled code, for 90 days, to stop spam.</p>
     </section>
   </div>
@@ -241,6 +252,15 @@
     if (id) {
       $('#s-open').href = 'velvet://share/' + id; $('#s-open').hidden = false;
       location.href = $('#s-open').href;
+      // what was shared, from Velvet's public share lookup (the same one the app uses before you sign in); text only
+      fetch('https://yhpdueqplnnolesuwhht.supabase.co/rest/v1/rpc/get_share', { method: 'POST', headers: { apikey: 'sb_publishable_mQxgIXkRv03mfO6bsVvhDg_wEkZ2BUt', 'Content-Type': 'application/json' }, body: JSON.stringify({ sid: id }) })
+        .then(r => (r.ok ? r.json() : null))
+        .then(s => {
+          if (!s) { $('#s-text').textContent = 'This share has run out (links last 30 days) or doesn’t exist.'; return; }
+          const n = Array.isArray(s.tracks) ? s.tracks.length : 0;
+          $('#s-text').textContent = `${s.from || 'Someone'} shared ${s.kind === 'playlist' ? `the playlist “${s.name}” (${n} song${n === 1 ? '' : 's'})` : `“${s.name}”`} with you.`;
+        })
+        .catch(() => {}); // offline: the plain sentence stays
       setTimeout(() => { $('#s-title').textContent = 'Open it in Velvet'; }, 1500);
     } else {
       $('#s-title').textContent = 'This link isn’t complete';
