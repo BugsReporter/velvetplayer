@@ -14,15 +14,16 @@
   [hidden] { display: none !important; }
   body { margin: 0; min-height: 100vh; background: radial-gradient(1200px 700px at 15% -10%, #4a1022, transparent 60%), radial-gradient(900px 600px at 100% 0%, #2c0a17, transparent 60%), var(--bg); color: var(--ink); font: 15px/1.6 system-ui, "Segoe UI", sans-serif; }
   a { color: var(--ink); }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 48px 28px 64px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 48px 28px 64px; }
   /* the top: name on the left, download on the right */
-  .top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 32px; }
+  .top { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 32px; }
+  .top > .side { display: flex; flex-direction: column; align-items: flex-end; } /* the download side stays on the right */
   .brand { display: flex; align-items: center; gap: 18px; }
   .brand img { width: 72px; height: 72px; filter: drop-shadow(0 6px 18px #e03e6655); }
   .brand h1 { margin: 0; font-size: 46px; line-height: 1; letter-spacing: -.02em; }
   .brand p { margin: 6px 0 0; color: var(--dim); font-size: 18px; }
   .brand em { color: var(--rose); font-style: italic; font-weight: 700; }
-  .get { display: flex; flex-wrap: wrap; gap: 14px; align-items: stretch; }
+  .get { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 14px; align-items: stretch; }
   .dl { display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 30px; border-radius: 999px; border: 0; background: var(--rose); color: #fff; font-family: inherit; font-weight: 700; font-size: 16px; line-height: 1; text-decoration: none; cursor: pointer; box-shadow: 0 10px 28px #e03e6640; transition: filter .15s, transform .1s; }
   .btn:hover { filter: brightness(1.1); } .btn:active { transform: scale(.98); }
@@ -40,7 +41,7 @@
   .vt-state.unknown { color: var(--dim); font-weight: 600; }
   .vt-state small { display: block; font-weight: 500; color: var(--mute); font-size: 11px; }
   .fbbox { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
-  .notice { margin: 20px 0 0 auto; max-width: 560px; color: var(--dim); font-size: 13px; }
+  .notice { margin: 20px 0 0; max-width: 560px; color: var(--dim); font-size: 13px; text-align: right; }
   .notice b { color: var(--ink); }
   hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0; }
   .cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; }
@@ -51,7 +52,7 @@
   .legal p { color: var(--dim); margin: 0 0 12px; font-size: 14px; }
   .legal b { color: var(--ink); }
   footer { margin-top: 40px; color: var(--mute); font-size: 12px; }
-  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } .notice { margin-left: 0; } .brand h1 { font-size: 38px; } }
+  @media (max-width: 760px) { .cols, .top { grid-template-columns: 1fr; } .top > .side { align-items: flex-start; } .get { justify-content: flex-start; } .notice { text-align: left; } .brand h1 { font-size: 38px; } }
   /* the feedback dialog */
   dialog { width: min(560px, 92vw); border: 0; border-radius: 16px; padding: 24px; background: #23121a; color: var(--ink); box-shadow: 0 24px 60px #000c, 0 0 0 1px var(--line); }
   dialog::backdrop { background: #000000b3; }
@@ -96,7 +97,7 @@
       <img src="/velvetplayer/icon.png" alt="">
       <div><h1>Velvet</h1><p>An <em>intimate</em> music experience~</p></div>
     </div>
-    <div>
+    <div class="side">
       <div class="get">
         <div class="dl">
           <a class="btn" id="dl" href="https://github.com/BugsReporter/velvet-releases/releases/latest" rel="noopener">Download for Windows</a>
